@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# if we don't have a refresh token cached on disk, go get one. 
+# if we don't have a refresh token cached on disk, go get one.
 # spin up a simple Web server that will listen for auth code, then exchange that for a token and cache it locally in a file.
 import ssl
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -13,9 +13,10 @@ if config_file:
 else:
     raise ValueError("Please provide config.json file with account information.")
 
-client_id = config["client_id"] # Multi-tenant DriveReader App
+client_id = config["client_id"]  # Multi-tenant DriveReader App
 redirect_uri = config["redirect_uri"]
 scopes = config["scopes"]
+
 
 def getAuthzToken(client_id, code, redirect_uri, scopes, is_msa_account):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -37,7 +38,8 @@ def getAuthzToken(client_id, code, redirect_uri, scopes, is_msa_account):
     refresh_token = content["refresh_token"]
     return refresh_token
 
-# HTTPRequestHandler class
+
+# TODO: spinning up a web server might be overkill. Consider doing something simpler like straight up socket connection.
 class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
     # GET
     def do_GET(self):
@@ -65,9 +67,14 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             refresh_token = getAuthzToken(
                 client_id, code, redirect_uri, scopes, is_msa_account
             )
-            with open('refresh.txt', 'w') as token_file:
-                token_file.write(refresh_token)    
-                self.wfile.write(bytes("Cached refresh token locally. You can close this window and shutdown the server script.", "utf8"))    
+            with open("refresh.txt", "w") as token_file:
+                token_file.write(refresh_token)
+                self.wfile.write(
+                    bytes(
+                        "Cached refresh token locally. You can close this window and shutdown the server script.",
+                        "utf8",
+                    )
+                )
         return
 
 
@@ -80,10 +87,12 @@ def run():
     httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
 
     print("running server...")
-    
+
     httpd.serve_forever()
 
+
 import webbrowser
+
 auth_site = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scopes}"
 # Open url in a new window of the default browser, if possible
 webbrowser.open_new(auth_site)

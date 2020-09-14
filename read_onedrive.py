@@ -13,9 +13,10 @@ if config_file:
 else:
     raise ValueError("Please provide config.json file with account information.")
 
-client_id = config["client_id"] # Multi-tenant DriveReader App
+client_id = config["client_id"]  # Multi-tenant DriveReader App
 redirect_uri = config["redirect_uri"]
 scopes = config["scopes"]
+
 
 def refreshAuthzToken(client_id, refresh_token, redirect_uri, scopes, is_msa_account):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -39,8 +40,11 @@ def refreshAuthzToken(client_id, refresh_token, redirect_uri, scopes, is_msa_acc
     refresh_token = content["refresh_token"]
     return id_token, access_token, refresh_token
 
+
 if os.path.exists("refresh.txt") == False:
-    print("I couldn't find a refresh token cache file. Running cache_refresh_token.py to try and get one.")
+    print(
+        "I couldn't find a refresh token cache file. Running cache_refresh_token.py to try and get one."
+    )
     os.system("start python cache_refresh_token.py")
     while os.path.exists("refresh.txt") == False:
         sleep(1)
@@ -56,12 +60,15 @@ try:
 except Exception as e:
     pass
 
-id_token, access_token, refresh_token = refreshAuthzToken(client_id, code, redirect_uri, scopes, is_msa_account)
+id_token, access_token, refresh_token = refreshAuthzToken(
+    client_id, code, redirect_uri, scopes, is_msa_account
+)
 print(access_token)
 
 decoded_id_token = jwt.decode(id_token, verify=False)
 print(json.dumps(decoded_id_token, indent=2, sort_keys=True))
 user = decoded_id_token["preferred_username"]
+
 
 def readMail(token, user):
     url = f"https://graph.microsoft.com/v1.0/users/{user}/messages"
@@ -80,10 +87,5 @@ def readMail(token, user):
         fromAddress = data["value"][message]["sender"]["emailAddress"]["address"]
         print(f"Created: {createdDateTime}\nFrom: {fromAddress}\nSubject: {subject}\n")
 
+
 readMail(access_token, user)
-
-
-
-
-
-
