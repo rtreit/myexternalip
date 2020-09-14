@@ -10,3 +10,11 @@ There's one small catch: how do you know what your current external IP address i
 How about the home PC just periodically checks for you, stores the IP address in the cloud in a secure location, and you can retrieve it on demand while you're out and about? 
 
 Let's do this. 
+
+## Getting the external IP address
+A simple Python script can run periodically check the Internet for its current public facing IP address. 
+
+## Reading and writing the data to the cloud
+We'll need a place to store the data in the cloud. In this project we'll use OneDrive but you could easily adapt it to use another cloud provide like Google Drive or DropBox. 
+
+
