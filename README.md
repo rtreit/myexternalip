@@ -11,6 +11,11 @@ How about the home PC just periodically checks for you, stores the IP address in
 
 Let's do this. 
 
+## Goals
+* Free - use some cloud storage like OneDrive or Google Drive that doesn't require paying anything
+* No secrets - don't require any secrets to be known ahead of time
+* Only authenticate once per machine - every time you need to read or write data from the cloud, you shouldn't have to re-authenticate - make it easy
+
 ## Getting the external IP address
 A simple Python script can run periodically check the Internet for its current public facing IP address. 
 
