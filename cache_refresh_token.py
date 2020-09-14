@@ -5,9 +5,17 @@ import ssl
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json, requests
 
-client_id = "97f01988-b110-4a78-b422-ad777b7ffae3"  # Multi-tenant DriveReader App
-redirect_uri = "http://localhost:8076"
-scopes = "offline_access openid profile Files.ReadWrite.All"
+config_file = "config.json"
+if config_file:
+    with open(config_file, "r") as f:
+        config_data = f.read()
+    config = json.loads(config_data)
+else:
+    raise ValueError("Please provide config.json file with account information.")
+
+client_id = config["client_id"] # Multi-tenant DriveReader App
+redirect_uri = config["redirect_uri"]
+scopes = config["scopes"]
 
 def getAuthzToken(client_id, code, redirect_uri, scopes, is_msa_account):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
