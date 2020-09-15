@@ -22,4 +22,44 @@ A simple Python script can run periodically check the Internet for its current p
 ## Reading and writing the data to the cloud
 We'll need a place to store the data in the cloud. In this project we'll use OneDrive but you could easily adapt it to use another cloud provide like Google Drive or DropBox. 
 
+## Pre-requisites
+* Python 3.6+ on your path
 
+## Home Machine Setup
+From an admin PowerShell prompt:
+```sh
+git clone https://github.com/rtreit/myexternalip.git
+cd .\myexternalip\
+python3 -m venv ./env
+.\env\Scripts\activate
+pip install -r .\requirements.txt
+.\register_scheduled_task.ps1
+```
+Now you just need to provide a one-time authentication to cache your OAuth refresh token:
+```sh
+python .\save_ip_to_onedrive.py
+```
+You'll be prompted to give the OAuth app access to your OneDrive files. The refresh token is cached locally and will be re-used for future interactions with OneDrive. 
+
+After consenting, your current IP address will be saved to your OneDrive root folder under a new \myexternalip folder. 
+
+The IP address will be updated periodically in the background via the scheduled task. Now your home PC's external IP address will always be available to you in OneDrive, no matter where you are!
+
+## Remote Machine Setup
+You can  just browse manually the "myexternalip.txt" file in your OneDrive of course. Or to automate reading it:
+```sh
+git clone https://github.com/rtreit/myexternalip.git
+cd .\myexternalip\
+python3 -m venv ./env
+.\env\Scripts\activate
+pip install -r .\requirements.txt
+python .\read_ip_from_onedrive.py
+```
+The first time you run, you'll be redirected to get the initial refresh token. 
+
+Now any time you want to output your home PC's IP address, just run that last script:
+```sh
+python .\read_ip_from_onedrive.py
+```
+
+Now you can remotely access your home machine no matter where you are. 
