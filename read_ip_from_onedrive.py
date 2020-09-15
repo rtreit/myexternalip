@@ -16,6 +16,7 @@ else:
 client_id = config["client_id"]  # Multi-tenant DriveReader App
 redirect_uri = config["redirect_uri"]
 scopes = config["scopes"]
+ipfile = config["ipfile"]
 
 
 def refreshAuthzToken(client_id, refresh_token, redirect_uri, scopes, is_msa_account):
@@ -53,7 +54,7 @@ if os.path.exists("refresh.txt") == False:
 with open("refresh.txt", "r") as cached_refresh_token:
     code = cached_refresh_token.read()
 
-print(code)
+#print(code)
 try:
     if len(code.split(".")[2]) == 37:
         is_msa_account = True
@@ -63,29 +64,31 @@ except Exception as e:
 id_token, access_token, refresh_token = refreshAuthzToken(
     client_id, code, redirect_uri, scopes, is_msa_account
 )
-print(access_token)
+#print(access_token)
 
 decoded_id_token = jwt.decode(id_token, verify=False)
-print(json.dumps(decoded_id_token, indent=2, sort_keys=True))
+#print(json.dumps(decoded_id_token, indent=2, sort_keys=True))
 user = decoded_id_token["preferred_username"]
+print(f"Trying to retrieve external IP address from {ipfile} in {user}'s Drive...'")
 
-
-def readMail(token, user):
-    url = f"https://graph.microsoft.com/v1.0/users/{user}/messages"
+def callGraphApi(url, user_token):
     params = {}
-    headers = {"Authorization": f"{token}"}
+    headers = {"Authorization":f"{user_token}"}
     r = requests.get(url=url, headers=headers, params=params)
-    data = r.json()
-    pretty = json.dumps(json.loads(r.content), indent=2, sort_keys=True)
-    # with open("mail.json", "w") as json_file:
-    # json.dump(data, json_file)
-    print(len(data))
-    print("Recent Messages:\n")
-    for message in range(len(data)):
-        createdDateTime = data["value"][message]["createdDateTime"]
-        subject = data["value"][message]["subject"]
-        fromAddress = data["value"][message]["sender"]["emailAddress"]["address"]
-        print(f"Created: {createdDateTime}\nFrom: {fromAddress}\nSubject: {subject}\n")
+    return json.loads(r.content)
 
 
-readMail(access_token, user)
+url = f"https://graph.microsoft.com/v1.0/users/{user}/drives"
+user_drive = callGraphApi(url, access_token)
+drive_id = user_drive['value'][0]['id']
+
+
+url = f"https://graph.microsoft.com/v1.0/users/{user}/drives/{drive_id}/root/search(q='{ipfile}')"
+myipfile = callGraphApi(url, access_token)
+if len(myipfile['value']) > 0:
+    data = myipfile['value'][0]
+    downloadurl = data['@microsoft.graph.downloadUrl']
+    r = requests.get(downloadurl)
+    print(r.content.decode("utf-8"))
+else:
+    print(f"Did not find file {ipfile} in {user}'s drive root!'")
