@@ -22,6 +22,11 @@ A simple Python script can run periodically check the Internet for its current p
 ## Reading and writing the data to the cloud
 We'll need a place to store the data in the cloud. In this project we'll use OneDrive but you could easily adapt it to use another cloud provide like Google Drive or DropBox. 
 
+## A note on the OAuth app used
+To read and write data to OneDrive (or any other cloud storage provider) you'll need to specify an OAuth app. This is the application that will be granted permissions to your cloud files. During the OAuth flow, the token provider will send the code to the redirect URI specified, which will then be exchanged for the actual auth tokens. 
+
+For this project I've registered a multi-tenant app in Azure Active Directory for use with OneDrive. This app will work with both commerical AAD accounts as well as consumer MSA accounts. Since the redirect URI specified in the code only redirects to localhost, no tokens will be provided to any external service. So you're perfectly fine using the default AppId specified in the config. However, you might want to register your own AppId and use that instead. 
+
 ## Pre-requisites
 * Python 3.6+ on your path
 
