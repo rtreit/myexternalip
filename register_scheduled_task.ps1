@@ -1,4 +1,5 @@
-# dir where script is executing (%~dp0 equivalent)
+# run this script as an administrator
+# this will register the powershell script to run as a scheduled task on a fixed interval without flashing a command prompt window temporarily
 function Get-ScriptDirectory
 {
     $Invocation = (Get-Variable MyInvocation -Scope 1).Value
@@ -15,10 +16,10 @@ if ($taskExists)
 $thisdirectory = Get-ScriptDirectory
 #$thisdirectory = $thisdirectory.Path
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -WorkingDirectory $thisdirectory -Argument "-WindowStyle Hidden -File run_save_ip_to_onedrive.ps1"
-$basetrigger = New-ScheduledTaskTrigger -Daily -At 11:00am 
-$secondarytrigger = New-ScheduledTaskTrigger -Once -At 1am -RepetitionInterval (New-TimeSpan -Minutes 1) -RepetitionDuration (New-TimeSpan -Minutes 5)
+$principal = New-ScheduledTaskPrincipal -LogonType S4U -User "$env:USERDOMAIN\$env:USERNAME"
+$basetrigger = New-ScheduledTaskTrigger -Daily -At 1am
+$secondarytrigger = New-ScheduledTaskTrigger -Once -At 1am -RepetitionInterval (New-TimeSpan -Hours 1) 
 $basetrigger.Repetition  = $secondarytrigger.Repetition 
+$settings = New-ScheduledTaskSettingsSet -RunOnlyIfNetworkAvailable:$true -StartWhenAvailable:$true
 
-$settings = New-ScheduledTaskSettingsSet -Hidden:$true -RunOnlyIfNetworkAvailable:$true -StartWhenAvailable:$true
-
-Register-ScheduledTask -Action $action -Trigger $basetrigger -TaskName $taskName -Description "Save my External IP to OneDrive" -Settings $settings 
+Register-ScheduledTask -Action $action -Trigger $basetrigger -TaskName $taskName -Description "Save my External IP to OneDrive" -Settings $settings -Principal $principal 
