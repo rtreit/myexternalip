@@ -133,3 +133,6 @@ refresh.txt
 
 # VS Code artifacts
 .vscode/
+bin/
+.csproj
+obj/
